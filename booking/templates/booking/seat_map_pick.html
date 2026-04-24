@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Seat Booking</title>
+    <link rel="stylesheet" href="{% static 'booking/style.css' %}">
+</head>
+
+<body>
+
+    <h1>Choose Your Seats</h1>
+
+    <div class="wrapper">
+
+        <!-- Stage -->
+        <div class="stage">STAGE</div>
+
+        <!-- TOP BLOCK: rows A–F -->
+        <div id="seats-top" class="seats-block"></div>
+
+        <!-- MAIN HORIZONTAL AISLE -->
+        <div class="horizontal-aisle">
+            <span class="entry-label">Entry</span>
+            <span class="aisle-label">AISLE</span>
+            <span class="entry-label">Entry</span>
+        </div>
+
+        <!-- BOTTOM BLOCK: rows G–P -->
+        <div id="seats-bottom" class="seats-block"></div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-box legend-available"></span>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-box legend-selected"></span>
+                <span>Selected</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-box legend-booked"></span>
+                <span>Booked</span>
+            </div>
+        </div>
+
+        <!-- Selection summary -->
+        <p>Selected seats: <span id="selected"></span></p>
+        <p>Total: ₹<span id="total">0</span></p>
+        <!-- Confirm button - shows modal -->
+        <button id="confirm-btn" class="btn">Confirm</button>
+
+        <!-- Modal (simple markup, no external lib needed) -->
+        <div id="checkout-modal" class="modal" style="display:none;">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <h3>Confirm & Pay</h3>
+                <form id="checkout-form" class="checkout-form">
+
+                    <div class="form-row">
+                        <label>Name</label>
+                        <input name="name" type="text" autocomplete="name" required />
+                    </div>
+
+                    <div class="form-row">
+                        <label>Email</label>
+                        <input name="email" type="email" autocomplete="email" required />
+                    </div>
+
+                    <div class="form-row">
+                        <label>Phone</label>
+                        <input name="phone" type="tel" autocomplete="tel" required />
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="submit" id="pay-now-btn">Pay & Book</button>
+                        <button type="button" id="cancel-modal">Cancel</button>
+                    </div>
+                </form>
+
+
+            </div>
+        </div>
+
+        <!-- CSRF token for fetch -->
+        <script>
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+        </script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    </div>
+
+    <!-- Booked seats from Django as JSON text -->
+    <script id="booked-seats-data" type="application/json">
+{{ booked_seats_json|safe }}
+</script>
+
+    <script src="{% static 'booking/script.js' %}"></script>
+</body>
+
+</html>
+<style>
+    .modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        position: relative;
+        z-index: 2001;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 360px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h3 {
+        margin-top: 0
+    }
+
+    .checkout-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-row label {
+        width: 80px;
+        /* keeps labels aligned */
+        font-weight: 600;
+    }
+
+    .form-row input {
+        flex: 1;
+        padding: 4px 6px;
+        /* smaller height */
+        font-size: 14px;
+        margin-left: 10px;
+
+        border: 1px solid #555;
+        /* ensure consistent border */
+        border-radius: 4px;
+        /* optional: clean rounded corners */
+        background: #fff;
+        /* fixes invisible field issues */
+        height: 28px;
+        /* explicit smaller height */
+        box-sizing: border-box;
+    }
+
+    .modal-buttons {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+    }
+</style>
